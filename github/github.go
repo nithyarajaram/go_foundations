@@ -7,11 +7,6 @@ import (
 	"net/http"
 )
 
-type Reply struct {
-	Name         string
-	Public_Repos int
-}
-
 func main() {
 
 	fmt.Println(githubInfo("tebeka"))
@@ -34,12 +29,15 @@ func githubInfo(login string) (string, int, error) {
 		log.Fatalf("Error: Can't copy %s", err)
 	} */
 
-	var r Reply
-
+	//Anonymous struct for one-off usage consuming API's
+	var r struct {
+		Name      string
+		Num_Repos int `json:"public_repos"`
+	}
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&r); err != nil {
-		log.Fatalf("Error: Can't decode %s", err)
+		return "", 0, err
 	}
-	return r.Name, r.Public_Repos, nil
+	return r.Name, r.Num_Repos, nil
 
 }
