@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -22,12 +24,12 @@ func githubInfo(login string) (string, int, error) {
 	if resp.StatusCode != http.StatusOK {
 		log.Fatalf("Error %s:", resp.Status)
 	}
-	// fmt.Printf("Content-Type %s", resp.Header.Get("Content-Type"))
+	fmt.Printf("Content-Type %s", resp.Header.Get("Content-Type"))
 
-	/* if _, err := io.Copy(os.Stdout, resp.Body); err != nil {
+	if _, err := io.Copy(os.Stdout, resp.Body); err != nil {
 
 		log.Fatalf("Error: Can't copy %s", err)
-	} */
+	}
 
 	//Anonymous struct for one-off usage consuming API's
 	var r struct {
