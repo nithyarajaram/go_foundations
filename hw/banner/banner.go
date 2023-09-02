@@ -4,7 +4,9 @@ import "fmt"
 
 func main() {
 
-	fmt.Println("Result:", isPalindrome("loool"))
+	fmt.Println("Hello World")
+
+	//fmt.Println("Result:", isPalindrome("loool"))
 }
 
 /*
