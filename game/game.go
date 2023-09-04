@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
 
@@ -29,11 +31,17 @@ func main() {
 	p1 := Player{
 		Name: "Nithya",
 		Item: i2,
+		Keys: []Key{1},
 	}
 
 	fmt.Println(p1.X, p1.Y)
 
 	p1.Move(300, 400)
+
+	fmt.Println(p1.FoundKey(Jade))
+	fmt.Println(p1.FoundKey(Copper))
+	fmt.Println(p1.FoundKey(Crystal))
+	fmt.Println(p1.FoundKey(25))
 
 	//fmt.Printf("Player's latest position: %#v", p1.Item)
 
@@ -44,9 +52,25 @@ func main() {
 
 	moveAll(ms, 0, 0)
 	for _, m := range ms {
-		fmt.Printf("%#v", m)
+		fmt.Printf("%#v\n", m)
 	}
 
+	k := Jade
+	fmt.Println(k)
+
+}
+
+func (k Key) String() string {
+	switch k {
+	case Jade:
+		return "Jade"
+	case Copper:
+		return "Copper"
+	case Crystal:
+		return "Crystal"
+
+	}
+	return fmt.Sprintf("<Key>:%d", k)
 }
 
 type Item struct {
@@ -57,6 +81,7 @@ type Item struct {
 type Player struct {
 	Name string
 	Item
+	Keys []Key
 }
 
 const (
@@ -82,6 +107,40 @@ func (i *Item) Move(x, y int) {
 	i.Y = y
 }
 
+func (p *Player) FoundKey(k Key) error {
+
+	if k < Jade || k > invalidKey {
+		return fmt.Errorf("not a valid key")
+	}
+
+	if containsKey(p.Keys, k) {
+		return fmt.Errorf("key already exists")
+	} else {
+		p.Keys = append(p.Keys, k)
+		return nil
+	}
+}
+
+func containsKey(keys []Key, k Key) bool {
+	for _, k2 := range keys {
+		if k2 == k {
+			return true
+		}
+	}
+	return false
+}
+
+/*
+func containsKey(keys []Key, k Key) bool {
+	for _, k2 := range keys {
+		if k2 == k {
+			return true
+		}
+	}
+	return false
+}
+*/
+
 type mover interface {
 	Move(x, y int)
 }
@@ -92,3 +151,12 @@ func moveAll(ms []mover, x, y int) {
 
 	}
 }
+
+type Key byte
+
+const (
+	Jade Key = iota + 1
+	Copper
+	Crystal
+	invalidKey
+)
