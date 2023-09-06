@@ -25,6 +25,8 @@ func main() {
 
 var wordRe = regexp.MustCompile(`[a-zA-Z]+`)
 
+type WordList [string]int
+
 func maxWord(frequency map[string]int) (string, int, error) {
 
 	if len(frequency) == 0 {
