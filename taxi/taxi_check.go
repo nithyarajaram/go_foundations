@@ -7,7 +7,7 @@ f427b5880e9164ec1e6cda53aa4b2d1f1e470da973e5b51748c806ea5c57cbdf  taxi-02.csv
 ...
 
 You should compute concurrently sha256 signatures of these files and see if
-they math the ones in the index file.
+they match the ones in the index file.
 
   - Print the number of processed files
   - If there's a mismatch, print the offending file(s) and exit the program with
@@ -70,7 +70,6 @@ func parseSigFile(r io.Reader) (map[string]string, error) {
 
 func main() {
 	rootDir := "/Users/nithyarajaram/Downloads/taxi-sha256" // Change to where to unzipped taxi-sha256.zip
-	//fmt.Println(path.Join(rootDir, "sha256sum.txt"))
 	file, err := os.Open(path.Join(rootDir, "sha256sum.txt"))
 	if err != nil {
 		log.Fatalf("error: %s", err)
@@ -83,64 +82,52 @@ func main() {
 	}
 
 	start := time.Now()
-	ch := make(chan result)
-	for name, _ := range sigs {
-		fileName := path.Join(rootDir, name) + ".bz2"
-		//fmt.Println(fileName)
-		go sigWorker(fileName, ch)
 
-		/*fmt.Println(res[0])
-		if res.err != nil {
-			fmt.Println(err)
-		}*/
-
-	}
-
-	for range sigs {
-		res := <-ch
-		fmt.Println(res.filename, res.signature, res.err)
-	}
-
-	/*
-		ok := true
-		for name, signature := range sigs {
-			fileName := path.Join(rootDir, name) + ".bz2"
-			sig, err := fileSig(fileName)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %s - %s\n", fileName, err)
-				ok = false
-				continue
-			}
-
-			if sig != signature {
-				ok = false
-				fmt.Printf("error: %s mismatch\n", fileName)
-			}
-		}
-	*/
+	ok := sigworker(sigs)
 
 	duration := time.Since(start)
 	fmt.Printf("processed %d files in %v\n", len(sigs), duration)
-	//if !ok {
-	//	os.Exit(1)
-	//}
+
+	if !ok {
+		os.Exit(1)
+	}
 }
 
 type result struct {
-	err       error
-	filename  string
-	signature string
+	match    bool
+	filename string
 }
 
-func sigWorker(fileName string, ch chan result) {
+func sigworker(sigs map[string]string) bool {
 
-	res := result{filename: fileName}
-	sig, err := fileSig(fileName)
-	if err != nil {
-		res.err = err
+	ok := true
+	rootDir := "/Users/nithyarajaram/Downloads/taxi-sha256"
+
+	ch := make(chan result)
+	for name, signature := range sigs {
+
+		fileName := path.Join(rootDir, name) + ".bz2"
+		go func(f, s string) {
+			sig, _ := fileSig(f)
+			if sig != s {
+				r := result{
+					match:    false,
+					filename: f,
+				}
+				ch <- r
+				ok = false
+			}
+			r := result{
+				match:    true,
+				filename: f,
+			}
+			ch <- r
+
+		}(fileName, signature)
+		msg := <-ch
+		if !msg.match {
+			fmt.Println(msg)
+		}
 	}
-	res.signature = sig
-
-	ch <- res
-
+	return ok
 }
